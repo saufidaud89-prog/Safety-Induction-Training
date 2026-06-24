@@ -47,7 +47,7 @@ allowfullscreen>
 </iframe>
 
 <br>
-<button onclick="completeVideo()">I Have Finished Watching</button>
+<button id="videoBtn" onclick="completeVideo()" disabled>Watching video...</button>
 
 <p>⚠ Must watch full video / Mesti habiskan video</p>
 </div>
@@ -71,6 +71,11 @@ let worker = {};
 let videoCompleted = false;
 let certNo = "";
 let selectedQuestions = [];
+
+// ===== COMPLIANCE TIMER =====
+let watchTimeRequired = 180; // seconds (adjust if needed)
+let watchTimer = 0;
+let timerInterval;
 
 // ===== QUESTION BANK =====
 const QUESTION_BANK = [
@@ -105,7 +110,7 @@ document.getElementById("languageSection").style.display = "none";
 document.getElementById("registration").style.display = "block";
 }
 
-// ===== START =====
+// ===== START TRAINING =====
 function startTraining(){
 
 worker.name = document.getElementById("name").value;
@@ -128,18 +133,48 @@ let selectedVideo = (language === "bm") ? bmVideo : enVideo;
 
 document.getElementById("videoFrame").src = selectedVideo;
 
-// Optional title
+// ===== TITLE =====
 document.getElementById("videoTitle").innerText =
 (language === "bm") ? "Video Latihan (BM)" : "Training Video (EN)";
+
+// ===== TIMER LOCK =====
+let btn = document.getElementById("videoBtn");
+
+watchTimer = 0;
+btn.disabled = true;
+
+timerInterval = setInterval(() => {
+
+watchTimer++;
+
+let remaining = watchTimeRequired - watchTimer;
+
+btn.innerText = "Please wait " + remaining + "s";
+
+if (watchTimer >= watchTimeRequired){
+clearInterval(timerInterval);
+btn.disabled = false;
+btn.innerText = "Proceed to Quiz";
+}
+
+}, 1000);
 
 selectedQuestions = shuffle([...QUESTION_BANK]);
 certNo = generateCertNumber();
 }
 
-// ===== VIDEO COMPLETE =====
+// ===== COMPLETE VIDEO =====
 function completeVideo(){
+
+if(watchTimer < watchTimeRequired){
+alert("You must complete the video first.");
+return;
+}
+
 videoCompleted = true;
+
 document.getElementById("quiz").style.display = "block";
+
 loadQuiz();
 }
 
@@ -160,21 +195,26 @@ form.innerHTML += html + "<br>";
 // ===== SUBMIT =====
 function submitQuiz(){
 
-if(!videoCompleted){ alert("Complete video first"); return; }
+if(!videoCompleted){
+alert("Complete video first");
+return;
+}
 
 let correct = 0;
 
 for(let i=0;i<selectedQuestions.length;i++){
 let ans = document.querySelector(`input[name="q${i}"]:checked`);
-if(!ans){ alert("Answer all questions"); return; }
+if(!ans){
+alert("Answer all questions");
+return;
+}
 if(parseInt(ans.value) === selectedQuestions[i].a) correct++;
 }
 
 if(correct === selectedQuestions.length){
-alert("PASSED");
 generateCertificate();
 }else{
-alert("FAILED - Must answer all correctly");
+alert("FAILED - Must answer ALL correctly");
 }
 }
 
@@ -188,9 +228,9 @@ function generateCertificate(){
 
 const { jsPDF } = window.jspdf;
 
-let today=new Date().toLocaleDateString();
+let today = new Date().toLocaleDateString();
 
-const doc=new jsPDF();
+const doc = new jsPDF();
 
 doc.text("SAFETY INDUCTION CERTIFICATE",105,25,null,null,"center");
 doc.text(worker.name,20,80);
@@ -201,7 +241,7 @@ doc.text(`Date: ${today}`,20,120);
 
 doc.save("certificate.pdf");
 
-document.getElementById("result").innerHTML="✅ PASSED";
+document.getElementById("result").innerHTML = "✅ PASSED";
 }
 
 </script>
