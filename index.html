@@ -10,7 +10,6 @@
 body { font-family: Arial; text-align: center; margin: 30px; }
 .container { max-width: 800px; margin: auto; }
 #quiz { display: none; text-align: left; }
-video { width: 100%; max-width: 700px; }
 button { padding: 10px 20px; margin-top: 15px; }
 </style>
 </head>
@@ -21,12 +20,14 @@ button { padding: 10px 20px; margin-top: 15px; }
 
 <h1>Safety Induction Training / Latihan Induksi Keselamatan</h1>
 
+<!-- LANGUAGE -->
 <div id="languageSection">
 <h2>Select Language / Pilih Bahasa</h2>
 <button onclick="setLanguage('en')">English</button>
 <button onclick="setLanguage('bm')">Bahasa Malaysia</button>
 </div>
 
+<!-- REGISTRATION -->
 <div id="registration" style="display:none;">
 <h2>Worker Registration / Pendaftaran</h2>
 <input id="name" placeholder="Full Name / Nama"><br><br>
@@ -35,16 +36,23 @@ button { padding: 10px 20px; margin-top: 15px; }
 <button onclick="startTraining()">Start / Mula</button>
 </div>
 
+<!-- VIDEO -->
 <div id="videoSection" style="display:none;">
-<h2>Video</h2>
+<h2 id="videoTitle">Video</h2>
+
 <iframe id="videoFrame"
 width="100%" height="400"
-allow="autoplay">
+allow="autoplay"
+allowfullscreen>
 </iframe>
 
 <br>
 <button onclick="completeVideo()">I Have Finished Watching</button>
 
+<p>⚠ Must watch full video / Mesti habiskan video</p>
+</div>
+
+<!-- QUIZ -->
 <div id="quiz">
 <h2>Quiz / Kuiz</h2>
 <form id="quizForm"></form>
@@ -64,107 +72,27 @@ let videoCompleted = false;
 let certNo = "";
 let selectedQuestions = [];
 
-// ===== QUESTION BANK (FULL DWIBAHASA) =====
+// ===== QUESTION BANK =====
 const QUESTION_BANK = [
 {
 q:`According to the GLTG WSH Policy, which group is covered?
 Mengikut Polisi WSH GLTG, kumpulan manakah diliputi?`,
 o:[
-"A. Only full-time permanent employees / Hanya pekerja tetap sepenuh masa sahaja",
-"B. Employees, contractors, subcontractors, visitors, clients, and suppliers / Pekerja, kontraktor, subkontraktor, pelawat, pelanggan dan pembekal",
-"C. Government inspectors only / Pemeriksa kerajaan sahaja",
-"D. Project site personnel only / Kakitangan tapak sahaja"
+"A. Only full-time permanent employees",
+"B. Employees, contractors, subcontractors, visitors, clients, and suppliers",
+"C. Government inspectors only",
+"D. Project site personnel only"
 ],a:1},
 
 {
 q:`What is a responsibility of Management?
 Apakah tanggungjawab pihak Pengurusan?`,
 o:[
-"A. Writing national WSH laws / Menggubal undang-undang WSH",
-"B. Identifying hazards without staff input / Mengenal pasti bahaya tanpa penglibatan pekerja",
-"C. Providing safe systems of work and adequate resources / Menyediakan sistem kerja selamat dan sumber mencukupi",
-"D. Limiting safety training / Mengehadkan latihan keselamatan"
-],a:2},
-
-{
-q:`What is an employee's responsibility?
-Apakah tanggungjawab pekerja?`,
-o:[
-"A. Conducting external audits / Menjalankan audit luar",
-"B. Taking reasonable care of own and others safety / Menjaga keselamatan diri dan orang lain",
-"C. Approving budget / Meluluskan bajet",
-"D. Designing evacuation plan / Mereka pelan pemindahan"
-],a:1},
-
-{
-q:`Contractor WSH requirement?
-Keperluan WSH kontraktor?`,
-o:[
-"A. Must align with GLTG policy / Mesti selaras dengan polisi GLTG",
-"B. Not required / Tidak diperlukan",
-"C. Only for international projects / Projek antarabangsa sahaja",
-"D. Only large companies / Syarikat besar sahaja"
-],a:0},
-
-{
-q:`Risk control involves?
-Kawalan risiko melibatkan?`,
-o:[
-"A. Ignoring minor risks / Mengabaikan risiko kecil",
-"B. Applying hierarchy of controls / Menggunakan hirarki kawalan",
-"C. PPE only / PPE sahaja",
-"D. Waiting for incident / Menunggu kemalangan"
-],a:1},
-
-{
-q:`Psychosocial risk example?
-Contoh risiko psikososial?`,
-o:[
-"A. Workplace bullying / Buli di tempat kerja",
-"B. Chemical exposure / Pendedahan bahan kimia",
-"C. Noise / Bunyi bising",
-"D. Ergonomics / Ergonomik"
-],a:0},
-
-{
-q:`Safety communication method?
-Kaedah komunikasi keselamatan?`,
-o:[
-"A. Management only / Pengurusan sahaja",
-"B. Annual meeting only / Mesyuarat tahunan sahaja",
-"C. Notice boards, emails, digital platforms / Papan kenyataan, emel dan platform digital",
-"D. Verbal only / Secara lisan sahaja"
-],a:2},
-
-{
-q:`Policy review timing?
-Bila polisi disemak?`,
-o:[
-"A. New chairman / Pengerusi baharu",
-"B. After fatality / Selepas kematian",
-"C. Every 5 years / Setiap 5 tahun",
-"D. Annually or when required / Setiap tahun atau bila perlu"
-],a:3},
-
-{
-q:`Contractor non-compliance consequence?
-Akibat ketidakpatuhan kontraktor?`,
-o:[
-"A. Increase fees / Tambah bayaran",
-"B. Penalty, suspension or termination / Penalti, penggantungan atau penamatan kontrak",
-"C. Promotion / Kenaikan pangkat",
-"D. Lead committee / Ketua jawatankuasa"
-],a:1},
-
-{
-q:`Incident reporting requirement?
-Keperluan pelaporan insiden?`,
-o:[
-"A. Annual reporting / Laporan tahunan",
-"B. Must be reported immediately / Mesti dilaporkan segera",
-"C. Optional / Pilihan",
-"D. Major incidents only / Insiden besar sahaja"
-],a:1}
+"A. Writing national WSH laws",
+"B. Identifying hazards without staff input",
+"C. Providing safe systems of work and adequate resources",
+"D. Limiting safety training"
+],a:2}
 ];
 
 // ===== RANDOM =====
@@ -192,6 +120,7 @@ return;
 document.getElementById("registration").style.display = "none";
 document.getElementById("videoSection").style.display = "block";
 
+// ===== VIDEO LINKS =====
 let bmVideo = "https://drive.google.com/file/d/1O4_BgVnN8-R9nSajCVFLI8V1YAMXUe5W/preview";
 let enVideo = "https://drive.google.com/file/d/19LcgEXT_tZvsH0FtZWLEwUFPZFimJCyq/preview";
 
@@ -199,22 +128,20 @@ let selectedVideo = (language === "bm") ? bmVideo : enVideo;
 
 document.getElementById("videoFrame").src = selectedVideo;
 
-function completeVideo(){
-videoCompleted = true;
-document.getElementById("quiz").style.display = "block";
-loadQuiz();
-}
+// Optional title
+document.getElementById("videoTitle").innerText =
+(language === "bm") ? "Video Latihan (BM)" : "Training Video (EN)";
 
 selectedQuestions = shuffle([...QUESTION_BANK]);
 certNo = generateCertNumber();
 }
 
-// ===== VIDEO CONTROL =====
-
+// ===== VIDEO COMPLETE =====
+function completeVideo(){
 videoCompleted = true;
 document.getElementById("quiz").style.display = "block";
 loadQuiz();
-};
+}
 
 // ===== LOAD QUIZ =====
 function loadQuiz(){
@@ -244,27 +171,11 @@ if(parseInt(ans.value) === selectedQuestions[i].a) correct++;
 }
 
 if(correct === selectedQuestions.length){
-saveRecord("PASSED");
+alert("PASSED");
+generateCertificate();
 }else{
-saveRecord("FAILED");
-alert("Must answer ALL correctly");
+alert("FAILED - Must answer all correctly");
 }
-}
-
-// ===== SAVE =====
-function saveRecord(result){
-fetch("YOUR_GOOGLE_SCRIPT_URL",{
-method:"POST",
-body:JSON.stringify({
-name:worker.name,
-ic:worker.ic,
-company:worker.company,
-result:result,
-certNo:certNo
-})
-}).then(()=>{
-if(result==="PASSED") generateCertificate();
-});
 }
 
 // ===== CERT =====
@@ -273,28 +184,11 @@ let y=new Date().getFullYear();
 return `GLT-SI-${y}-${Math.floor(1000+Math.random()*9000)}`;
 }
 
-function getExpiryDate(){
-let d=new Date(); d.setFullYear(d.getFullYear()+1);
-return d.toLocaleDateString();
-}
-
 function generateCertificate(){
 
 const { jsPDF } = window.jspdf;
 
 let today=new Date().toLocaleDateString();
-let expiry=getExpiryDate();
-
-let qrDiv=document.createElement("div");
-
-new QRCode(qrDiv,{
-text:`Cert:${certNo}\nName:${worker.name}`,
-width:100,height:100
-});
-
-setTimeout(()=>{
-
-let qr=qrDiv.querySelector("canvas").toDataURL();
 
 const doc=new jsPDF();
 
@@ -304,15 +198,10 @@ doc.text(`IC: ${worker.ic}`,20,90);
 doc.text(`Company: ${worker.company}`,20,100);
 doc.text(`Cert No: ${certNo}`,20,110);
 doc.text(`Date: ${today}`,20,120);
-doc.text(`Valid Until: ${expiry}`,20,130);
-
-doc.addImage(qr,"PNG",150,40,40,40);
 
 doc.save("certificate.pdf");
 
 document.getElementById("result").innerHTML="✅ PASSED";
-
-},500);
 }
 
 </script>
