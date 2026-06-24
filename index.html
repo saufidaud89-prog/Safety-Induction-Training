@@ -20,43 +20,33 @@ button { padding: 10px 20px; margin-top: 15px; }
 
 <h1>Safety Induction Training / Latihan Induksi Keselamatan</h1>
 
-<!-- LANGUAGE -->
 <div id="languageSection">
 <h2>Select Language / Pilih Bahasa</h2>
 <button onclick="setLanguage('en')">English</button>
 <button onclick="setLanguage('bm')">Bahasa Malaysia</button>
 </div>
 
-<!-- REGISTRATION -->
 <div id="registration" style="display:none;">
-<h2>Worker Registration / Pendaftaran</h2>
-<input id="name" placeholder="Full Name / Nama"><br><br>
+<h2>Worker Registration</h2>
+<input id="name" placeholder="Full Name"><br><br>
 <input id="ic" placeholder="IC / Passport"><br><br>
-<input id="company" placeholder="Company / Syarikat"><br><br>
-<button onclick="startTraining()">Start / Mula</button>
+<input id="company" placeholder="Company"><br><br>
+<button onclick="startTraining()">Start</button>
 </div>
 
-<!-- VIDEO -->
 <div id="videoSection" style="display:none;">
-<h2 id="videoTitle">Video</h2>
+<h2>Video</h2>
 
-<iframe id="videoFrame"
-width="100%" height="400"
-allow="autoplay"
-allowfullscreen>
-</iframe>
+<iframe id="videoFrame" width="100%" height="400" allowfullscreen></iframe>
 
 <br>
 <button id="videoBtn" onclick="completeVideo()" disabled>Watching video...</button>
 
-<p>⚠ Must watch full video / Mesti habiskan video</p>
 </div>
 
-<!-- QUIZ -->
 <div id="quiz">
-<h2>Quiz / Kuiz</h2>
+<h2>Quiz</h2>
 <form id="quizForm"></form>
-<br>
 <button onclick="submitQuiz()">Submit</button>
 <p id="result"></p>
 </div>
@@ -72,36 +62,123 @@ let videoCompleted = false;
 let certNo = "";
 let selectedQuestions = [];
 
-// ===== COMPLIANCE TIMER =====
-let watchTimeRequired = 180; // seconds (adjust if needed)
+// ===== TIMER =====
+let watchTimeRequired = 180;
 let watchTimer = 0;
 let timerInterval;
 
 // ===== QUESTION BANK =====
 const QUESTION_BANK = [
+
+// (ALL 10 QUESTIONS EXACTLY AS YOU PROVIDED)
+
 {
 q:`According to the GLTG WSH Policy, which group is covered?
 Mengikut Polisi WSH GLTG, kumpulan manakah diliputi?`,
 o:[
-"A. Only full-time permanent employees",
-"B. Employees, contractors, subcontractors, visitors, clients, and suppliers",
-"C. Government inspectors only",
-"D. Project site personnel only"
+"A. Only full-time permanent employees / Hanya pekerja tetap sepenuh masa sahaja",
+"B. Employees, contractors, subcontractors, visitors, clients, and suppliers / Pekerja, kontraktor, subkontraktor, pelawat, pelanggan dan pembekal",
+"C. Government inspectors only / Pemeriksa kerajaan sahaja",
+"D. Project site personnel only / Kakitangan tapak sahaja"
 ],a:1},
 
 {
 q:`What is a responsibility of Management?
 Apakah tanggungjawab pihak Pengurusan?`,
 o:[
-"A. Writing national WSH laws",
-"B. Identifying hazards without staff input",
-"C. Providing safe systems of work and adequate resources",
-"D. Limiting safety training"
-],a:2}
+"A. Writing national WSH laws / Menggubal undang-undang WSH",
+"B. Identifying hazards without staff input / Mengenal pasti bahaya tanpa penglibatan pekerja",
+"C. Providing safe systems of work and adequate resources / Menyediakan sistem kerja selamat dan sumber mencukupi",
+"D. Limiting safety training / Mengehadkan latihan keselamatan"
+],a:2},
+
+{
+q:`What is an employee's responsibility?
+Apakah tanggungjawab pekerja?`,
+o:[
+"A. Conducting external audits / Menjalankan audit luar",
+"B. Taking reasonable care of own and others safety / Menjaga keselamatan diri dan orang lain",
+"C. Approving budget / Meluluskan bajet",
+"D. Designing evacuation plan / Mereka pelan pemindahan"
+],a:1},
+
+{
+q:`Contractor WSH requirement?
+Keperluan WSH kontraktor?`,
+o:[
+"A. Must align with GLTG policy / Mesti selaras dengan polisi GLTG",
+"B. Not required / Tidak diperlukan",
+"C. Only for international projects / Projek antarabangsa sahaja",
+"D. Only large companies / Syarikat besar sahaja"
+],a:0},
+
+{
+q:`Risk control involves?
+Kawalan risiko melibatkan?`,
+o:[
+"A. Ignoring minor risks / Mengabaikan risiko kecil",
+"B. Applying hierarchy of controls / Menggunakan hirarki kawalan",
+"C. PPE only / PPE sahaja",
+"D. Waiting for incident / Menunggu kemalangan"
+],a:1},
+
+{
+q:`Psychosocial risk example?
+Contoh risiko psikososial?`,
+o:[
+"A. Workplace bullying / Buli di tempat kerja",
+"B. Chemical exposure / Pendedahan bahan kimia",
+"C. Noise / Bunyi bising",
+"D. Ergonomics / Ergonomik"
+],a:0},
+
+{
+q:`Safety communication method?
+Kaedah komunikasi keselamatan?`,
+o:[
+"A. Management only / Pengurusan sahaja",
+"B. Annual meeting only / Mesyuarat tahunan sahaja",
+"C. Notice boards, emails, digital platforms / Papan kenyataan, emel dan platform digital",
+"D. Verbal only / Secara lisan sahaja"
+],a:2},
+
+{
+q:`Policy review timing?
+Bila polisi disemak?`,
+o:[
+"A. New chairman / Pengerusi baharu",
+"B. After fatality / Selepas kematian",
+"C. Every 5 years / Setiap 5 tahun",
+"D. Annually or when required / Setiap tahun atau bila perlu"
+],a:3},
+
+{
+q:`Contractor non-compliance consequence?
+Akibat ketidakpatuhan kontraktor?`,
+o:[
+"A. Increase fees / Tambah bayaran",
+"B. Penalty, suspension or termination / Penalti, penggantungan atau penamatan kontrak",
+"C. Promotion / Kenaikan pangkat",
+"D. Lead committee / Ketua jawatankuasa"
+],a:1},
+
+{
+q:`Incident reporting requirement?
+Keperluan pelaporan insiden?`,
+o:[
+"A. Annual reporting / Laporan tahunan",
+"B. Must be reported immediately / Mesti dilaporkan segera",
+"C. Optional / Pilihan",
+"D. Major incidents only / Insiden besar sahaja"
+],a:1}
 ];
 
-// ===== RANDOM =====
-function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+// ===== SHUFFLE =====
+function shuffle(arr){
+return arr.map(a=>[Math.random(),a])
+.sort((a,b)=>a[0]-b[0])
+.map(a=>a[1]);
+}
 
 // ===== LANGUAGE =====
 function setLanguage(lang){
@@ -110,138 +187,122 @@ document.getElementById("languageSection").style.display = "none";
 document.getElementById("registration").style.display = "block";
 }
 
-// ===== START TRAINING =====
+// ===== START =====
 function startTraining(){
 
-worker.name = document.getElementById("name").value;
-worker.ic = document.getElementById("ic").value;
-worker.company = document.getElementById("company").value;
+worker.name = name.value;
+worker.ic = ic.value;
+worker.company = company.value;
 
-if (!worker.name || !worker.ic || !worker.company){
+if(!worker.name || !worker.ic || !worker.company){
 alert("Complete all details");
 return;
 }
 
-document.getElementById("registration").style.display = "none";
-document.getElementById("videoSection").style.display = "block";
+registration.style.display="none";
+videoSection.style.display="block";
 
-// ===== VIDEO LINKS =====
-let bmVideo = "https://drive.google.com/file/d/1O4_BgVnN8-R9nSajCVFLI8V1YAMXUe5W/preview";
-let enVideo = "https://drive.google.com/file/d/19LcgEXT_tZvsH0FtZWLEwUFPZFimJCyq/preview";
+// VIDEO
+let bm = "https://drive.google.com/file/d/1O4_BgVnN8-R9nSajCVFLI8V1YAMXUe5W/preview";
+let en = "https://drive.google.com/file/d/19LcgEXT_tZvsH0FtZWLEwUFPZFimJCyq/preview";
 
-let selectedVideo = (language === "bm") ? bmVideo : enVideo;
+videoFrame.src = (language==="bm") ? bm : en;
 
-document.getElementById("videoFrame").src = selectedVideo;
+// TIMER
+watchTimer=0;
+videoBtn.disabled=true;
 
-// ===== TITLE =====
-document.getElementById("videoTitle").innerText =
-(language === "bm") ? "Video Latihan (BM)" : "Training Video (EN)";
-
-// ===== TIMER LOCK =====
-let btn = document.getElementById("videoBtn");
-
-watchTimer = 0;
-btn.disabled = true;
-
-timerInterval = setInterval(() => {
-
+timerInterval=setInterval(()=>{
 watchTimer++;
+videoBtn.innerText="Wait "+(watchTimeRequired-watchTimer)+"s";
 
-let remaining = watchTimeRequired - watchTimer;
-
-btn.innerText = "Please wait " + remaining + "s";
-
-if (watchTimer >= watchTimeRequired){
+if(watchTimer>=watchTimeRequired){
 clearInterval(timerInterval);
-btn.disabled = false;
-btn.innerText = "Proceed to Quiz";
+videoBtn.disabled=false;
+videoBtn.innerText="Proceed to Quiz";
+}
+},1000);
+
+// RANDOM QUESTIONS + ANSWERS
+selectedQuestions = shuffle(QUESTION_BANK).map(q=>{
+let options = shuffle([...q.o]);
+let correctIndex = options.indexOf(q.o[q.a]);
+return { q:q.q, o:options, a:correctIndex };
+});
+
+certNo = "GLT-"+Date.now();
 }
 
-}, 1000);
-
-selectedQuestions = shuffle([...QUESTION_BANK]);
-certNo = generateCertNumber();
-}
-
-// ===== COMPLETE VIDEO =====
+// ===== COMPLETE =====
 function completeVideo(){
-
-if(watchTimer < watchTimeRequired){
-alert("You must complete the video first.");
+if(watchTimer<watchTimeRequired){
+alert("Complete video first");
 return;
 }
-
-videoCompleted = true;
-
-document.getElementById("quiz").style.display = "block";
-
+videoCompleted=true;
+quiz.style.display="block";
 loadQuiz();
 }
 
 // ===== LOAD QUIZ =====
 function loadQuiz(){
-let form = document.getElementById("quizForm");
-form.innerHTML = "";
-
+quizForm.innerHTML="";
 selectedQuestions.forEach((q,i)=>{
-let html = `<p>${i+1}. ${q.q}</p>`;
+let html=`<p>${i+1}. ${q.q}</p>`;
 q.o.forEach((opt,j)=>{
-html += `<label><input type="radio" name="q${i}" value="${j}"> ${opt}</label><br>`;
+html+=`<label><input type="radio" name="q${i}" value="${j}"> ${opt}</label><br>`;
 });
-form.innerHTML += html + "<br>";
+quizForm.innerHTML+=html+"<br>";
 });
 }
 
 // ===== SUBMIT =====
 function submitQuiz(){
-
-if(!videoCompleted){
-alert("Complete video first");
-return;
-}
-
-let correct = 0;
+let correct=0;
 
 for(let i=0;i<selectedQuestions.length;i++){
-let ans = document.querySelector(`input[name="q${i}"]:checked`);
-if(!ans){
-alert("Answer all questions");
-return;
-}
-if(parseInt(ans.value) === selectedQuestions[i].a) correct++;
+let ans=document.querySelector(`input[name=q${i}]:checked`);
+if(!ans){ alert("Answer all"); return; }
+if(parseInt(ans.value)===selectedQuestions[i].a) correct++;
 }
 
-if(correct === selectedQuestions.length){
+if(correct===selectedQuestions.length){
 generateCertificate();
 }else{
-alert("FAILED - Must answer ALL correctly");
+alert("FAILED - must get 100%");
 }
 }
 
 // ===== CERT =====
-function generateCertNumber(){
-let y=new Date().getFullYear();
-return `GLT-SI-${y}-${Math.floor(1000+Math.random()*9000)}`;
-}
-
 function generateCertificate(){
 
 const { jsPDF } = window.jspdf;
+let doc=new jsPDF();
 
-let today = new Date().toLocaleDateString();
+// QR
+let qrDiv=document.createElement("div");
+new QRCode(qrDiv,{ text:certNo, width:100,height:100 });
 
-const doc = new jsPDF();
+setTimeout(()=>{
+let qr=qrDiv.querySelector("canvas").toDataURL();
 
-doc.text("SAFETY INDUCTION CERTIFICATE",105,25,null,null,"center");
+doc.text("SAFETY INDUCTION CERTIFICATE",105,30,null,null,"center");
 doc.text(worker.name,20,80);
 doc.text(`IC: ${worker.ic}`,20,90);
 doc.text(`Company: ${worker.company}`,20,100);
 doc.text(`Cert No: ${certNo}`,20,110);
-doc.text(`Date: ${today}`,20,120);
+
+doc.addImage(qr,"PNG",150,60,40,40);
+
+// DECLARATION
+doc.setFontSize(10);
+doc.text("This is computer generated document, no signature required",105,250,null,null,"center");
 
 doc.save("certificate.pdf");
 
-document.getElementById("result").innerHTML = "✅ PASSED";
+result.innerHTML="✅ PASSED";
+
+},500);
 }
 
 </script>
