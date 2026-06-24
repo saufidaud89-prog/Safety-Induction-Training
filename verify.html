@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verification</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            margin: 40px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 500px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Certificate Verification</h2>
+
+<input type="text" id="search" placeholder="Enter IC or Cert No">
+<br>
+<button onclick="verify()">Verify</button>
+
+<div id="result"></div>
+
+<script>
+
+function verify() {
+
+    let value = document.getElementById("search").value;
+
+    fetch("YOUR_GOOGLE_SCRIPT_URL?search=" + value)
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === "NOT_FOUND") {
+            document.getElementById("result").innerHTML =
+                "❌ No record found";
+            return;
+        }
+
+        document.getElementById("result").innerHTML = `
+            <b>Name:</b> ${data.name}<br>
+            <b>IC:</b> ${data.ic}<br>
+            <b>Company:</b> ${data.company}<br>
+            <b>Status:</b> ${data.result}<br>
+            <b>Cert No:</b> ${data.certNo}<br>
+            <b>Date:</b> ${data.date}
+        `;
+    });
+}
+
+</script>
+
+</body>
+</html>

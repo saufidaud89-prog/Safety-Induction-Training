@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Safety Induction</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+body { font-family: Arial; text-align: center; margin: 30px; }
+.container { max-width: 800px; margin: auto; }
+#quiz { display: none; text-align: left; }
+video { width: 100%; max-width: 700px; }
+button { padding: 10px 20px; margin-top: 15px; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Safety Induction Training / Latihan Induksi Keselamatan</h1>
+
+<div id="languageSection">
+<h2>Select Language / Pilih Bahasa</h2>
+<button onclick="setLanguage('en')">English</button>
+<button onclick="setLanguage('bm')">Bahasa Malaysia</button>
+</div>
+
+<div id="registration" style="display:none;">
+<h2>Worker Registration / Pendaftaran</h2>
+<input id="name" placeholder="Full Name / Nama"><br><br>
+<input id="ic" placeholder="IC / Passport"><br><br>
+<input id="company" placeholder="Company / Syarikat"><br><br>
+<button onclick="startTraining()">Start / Mula</button>
+</div>
+
+<div id="videoSection" style="display:none;">
+<h2>Video</h2>
+<video id="video" controls>
+<source id="videoSource" src="" type="video/mp4">
+</video>
+<p>⚠ Must watch full video / Mesti habiskan video</p>
+</div>
+
+<div id="quiz">
+<h2>Quiz / Kuiz</h2>
+<form id="quizForm"></form>
+<br>
+<button onclick="submitQuiz()">Submit</button>
+<p id="result"></p>
+</div>
+
+</div>
+
+<script>
+
+// ===== GLOBAL =====
+let language = "";
+let worker = {};
+let videoCompleted = false;
+let certNo = "";
+let selectedQuestions = [];
+
+// ===== QUESTION BANK (FULL DWIBAHASA) =====
+const QUESTION_BANK = [
+{
+q:`According to the GLTG WSH Policy, which group is covered?
+Mengikut Polisi WSH GLTG, kumpulan manakah diliputi?`,
+o:[
+"A. Only full-time permanent employees / Hanya pekerja tetap sepenuh masa sahaja",
+"B. Employees, contractors, subcontractors, visitors, clients, and suppliers / Pekerja, kontraktor, subkontraktor, pelawat, pelanggan dan pembekal",
+"C. Government inspectors only / Pemeriksa kerajaan sahaja",
+"D. Project site personnel only / Kakitangan tapak sahaja"
+],a:1},
+
+{
+q:`What is a responsibility of Management?
+Apakah tanggungjawab pihak Pengurusan?`,
+o:[
+"A. Writing national WSH laws / Menggubal undang-undang WSH",
+"B. Identifying hazards without staff input / Mengenal pasti bahaya tanpa penglibatan pekerja",
+"C. Providing safe systems of work and adequate resources / Menyediakan sistem kerja selamat dan sumber mencukupi",
+"D. Limiting safety training / Mengehadkan latihan keselamatan"
+],a:2},
+
+{
+q:`What is an employee's responsibility?
+Apakah tanggungjawab pekerja?`,
+o:[
+"A. Conducting external audits / Menjalankan audit luar",
+"B. Taking reasonable care of own and others safety / Menjaga keselamatan diri dan orang lain",
+"C. Approving budget / Meluluskan bajet",
+"D. Designing evacuation plan / Mereka pelan pemindahan"
+],a:1},
+
+{
+q:`Contractor WSH requirement?
+Keperluan WSH kontraktor?`,
+o:[
+"A. Must align with GLTG policy / Mesti selaras dengan polisi GLTG",
+"B. Not required / Tidak diperlukan",
+"C. Only for international projects / Projek antarabangsa sahaja",
+"D. Only large companies / Syarikat besar sahaja"
+],a:0},
+
+{
+q:`Risk control involves?
+Kawalan risiko melibatkan?`,
+o:[
+"A. Ignoring minor risks / Mengabaikan risiko kecil",
+"B. Applying hierarchy of controls / Menggunakan hirarki kawalan",
+"C. PPE only / PPE sahaja",
+"D. Waiting for incident / Menunggu kemalangan"
+],a:1},
+
+{
+q:`Psychosocial risk example?
+Contoh risiko psikososial?`,
+o:[
+"A. Workplace bullying / Buli di tempat kerja",
+"B. Chemical exposure / Pendedahan bahan kimia",
+"C. Noise / Bunyi bising",
+"D. Ergonomics / Ergonomik"
+],a:0},
+
+{
+q:`Safety communication method?
+Kaedah komunikasi keselamatan?`,
+o:[
+"A. Management only / Pengurusan sahaja",
+"B. Annual meeting only / Mesyuarat tahunan sahaja",
+"C. Notice boards, emails, digital platforms / Papan kenyataan, emel dan platform digital",
+"D. Verbal only / Secara lisan sahaja"
+],a:2},
+
+{
+q:`Policy review timing?
+Bila polisi disemak?`,
+o:[
+"A. New chairman / Pengerusi baharu",
+"B. After fatality / Selepas kematian",
+"C. Every 5 years / Setiap 5 tahun",
+"D. Annually or when required / Setiap tahun atau bila perlu"
+],a:3},
+
+{
+q:`Contractor non-compliance consequence?
+Akibat ketidakpatuhan kontraktor?`,
+o:[
+"A. Increase fees / Tambah bayaran",
+"B. Penalty, suspension or termination / Penalti, penggantungan atau penamatan kontrak",
+"C. Promotion / Kenaikan pangkat",
+"D. Lead committee / Ketua jawatankuasa"
+],a:1},
+
+{
+q:`Incident reporting requirement?
+Keperluan pelaporan insiden?`,
+o:[
+"A. Annual reporting / Laporan tahunan",
+"B. Must be reported immediately / Mesti dilaporkan segera",
+"C. Optional / Pilihan",
+"D. Major incidents only / Insiden besar sahaja"
+],a:1}
+];
+
+// ===== RANDOM =====
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+// ===== LANGUAGE =====
+function setLanguage(lang){
+language = lang;
+document.getElementById("languageSection").style.display = "none";
+document.getElementById("registration").style.display = "block";
+}
+
+// ===== START =====
+function startTraining(){
+
+worker.name = document.getElementById("name").value;
+worker.ic = document.getElementById("ic").value;
+worker.company = document.getElementById("company").value;
+
+if (!worker.name || !worker.ic || !worker.company){
+alert("Complete all details");
+return;
+}
+
+document.getElementById("registration").style.display = "none";
+document.getElementById("videoSection").style.display = "block";
+
+document.getElementById("videoSource").src = (language==="bm") ? "bm.mp4" : "en.mp4";
+document.getElementById("video").load();
+
+selectedQuestions = shuffle([...QUESTION_BANK]);
+certNo = generateCertNumber();
+}
+
+// ===== VIDEO CONTROL =====
+const video = document.getElementById("video");
+let maxTime = 0;
+
+video.addEventListener("timeupdate",()=>{
+if(video.currentTime > maxTime) maxTime = video.currentTime;
+if(video.currentTime > maxTime + 1) video.currentTime = maxTime;
+});
+
+video.onended = function(){
+videoCompleted = true;
+document.getElementById("quiz").style.display = "block";
+loadQuiz();
+};
+
+// ===== LOAD QUIZ =====
+function loadQuiz(){
+let form = document.getElementById("quizForm");
+form.innerHTML = "";
+
+selectedQuestions.forEach((q,i)=>{
+let html = `<p>${i+1}. ${q.q}</p>`;
+q.o.forEach((opt,j)=>{
+html += `<label><input type="radio" name="q${i}" value="${j}"> ${opt}</label><br>`;
+});
+form.innerHTML += html + "<br>";
+});
+}
+
+// ===== SUBMIT =====
+function submitQuiz(){
+
+if(!videoCompleted){ alert("Complete video first"); return; }
+
+let correct = 0;
+
+for(let i=0;i<selectedQuestions.length;i++){
+let ans = document.querySelector(`input[name="q${i}"]:checked`);
+if(!ans){ alert("Answer all questions"); return; }
+if(parseInt(ans.value) === selectedQuestions[i].a) correct++;
+}
+
+if(correct === selectedQuestions.length){
+saveRecord("PASSED");
+}else{
+saveRecord("FAILED");
+alert("Must answer ALL correctly");
+}
+}
+
+// ===== SAVE =====
+function saveRecord(result){
+fetch("YOUR_GOOGLE_SCRIPT_URL",{
+method:"POST",
+body:JSON.stringify({
+name:worker.name,
+ic:worker.ic,
+company:worker.company,
+result:result,
+certNo:certNo
+})
+}).then(()=>{
+if(result==="PASSED") generateCertificate();
+});
+}
+
+// ===== CERT =====
+function generateCertNumber(){
+let y=new Date().getFullYear();
+return `GLT-SI-${y}-${Math.floor(1000+Math.random()*9000)}`;
+}
+
+function getExpiryDate(){
+let d=new Date(); d.setFullYear(d.getFullYear()+1);
+return d.toLocaleDateString();
+}
+
+function generateCertificate(){
+
+const { jsPDF } = window.jspdf;
+
+let today=new Date().toLocaleDateString();
+let expiry=getExpiryDate();
+
+let qrDiv=document.createElement("div");
+
+new QRCode(qrDiv,{
+text:`Cert:${certNo}\nName:${worker.name}`,
+width:100,height:100
+});
+
+setTimeout(()=>{
+
+let qr=qrDiv.querySelector("canvas").toDataURL();
+
+const doc=new jsPDF();
+
+doc.text("SAFETY INDUCTION CERTIFICATE",105,25,null,null,"center");
+doc.text(worker.name,20,80);
+doc.text(`IC: ${worker.ic}`,20,90);
+doc.text(`Company: ${worker.company}`,20,100);
+doc.text(`Cert No: ${certNo}`,20,110);
+doc.text(`Date: ${today}`,20,120);
+doc.text(`Valid Until: ${expiry}`,20,130);
+
+doc.addImage(qr,"PNG",150,40,40,40);
+
+doc.save("certificate.pdf");
+
+document.getElementById("result").innerHTML="✅ PASSED";
+
+},500);
+}
+
+</script>
+
+</body>
+</html>
